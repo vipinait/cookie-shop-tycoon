@@ -3,13 +3,27 @@
   const KEY = 'kevins-cookie-shop-v1';
   const $ = id => document.getElementById(id);
   const money = cents => (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-  const fresh = () => ({ cash: 10000, history: [] });
+  const fresh = () => ({ cash: 10000, history: [], satisfaction: 75 });
+  const signed = n => `${n > 0 ? '+' : ''}${n}`;
   let state = fresh();
   let serving = false;
   try {
     const saved = JSON.parse(localStorage.getItem(KEY));
     if (saved && Number.isSafeInteger(saved.cash) && saved.cash >= 0 && Array.isArray(saved.history) && saved.history.length <= 30 && saved.history.every(r => ['day','baked','sold','revenue','expenses','profit','cash','ads','price'].every(k => Number.isFinite(r[k])))) state = saved;
   } catch (_) { /* The game also works when storage is unavailable. */ }
+  // Old saves lack demand, so start tracking at 75 without inventing past feedback.
+  state.satisfaction = 75;
+  for (const r of state.history) {
+    if (Number.isInteger(r.demand) && r.demand >= r.sold) {
+      r.feedback = CookieSatisfaction.calculate(state.satisfaction, r.price, r.demand, r.sold);
+      state.satisfaction = r.feedback.score;
+    } else delete r.feedback;
+  }
+  function feedback(r) {
+    const f = r.feedback;
+    if (!f) return 'Not tracked on this day (older save).';
+    return `${f.score}/100 (${signed(f.change)} points). ${f.reasons.join(' ')}${f.limited ? ' Score limited to the 0–100 range.' : ''}`;
+  }
   const weather = [
     { name: 'A sunny stroll kind of day', demand: 1.12 },
     { name: 'Cloudy skies, cozy cookie cravings', demand: 1 },
@@ -75,13 +89,16 @@
   }
   function receipt(r) {
     $('results-title').textContent = `Day ${r.day} receipt`;
-    $('receipt').innerHTML = `<div class="receipt-day">KEVIN’S COOKIE SHOP • CLOSE OF BUSINESS</div><div class="sold">${r.sold} <span style="font-size:22px">/ ${r.baked}</span></div><p>cookies sold · ${r.baked - r.sold} donated</p><div class="receipt-lines"><div><span>Sales revenue</span><b>${money(r.revenue)}</b></div><div><span>Ingredients</span><span>${money(r.baked * 50)}</span></div><div><span>Advertising</span><span>${money(r.ads)}</span></div><div><span>Shop costs</span><span>$5.00</span></div><div><span>Total expenses</span><b>${money(r.expenses)}</b></div><div class="profit ${r.profit >= 0 ? 'positive' : 'negative'}"><span>Daily profit</span><span>${money(r.profit)}</span></div></div><div class="closing-cash"><span>Cash at closing</span><b>${money(r.cash)}</b></div><p>${r.sold === r.baked && r.baked > 0 ? 'Sold out! Try a larger batch tomorrow.' : r.sold < r.baked ? 'A few left on the tray. Try a smaller batch or a friendlier price.' : 'No cookies baked today. Tomorrow is another chance.'}</p>`;
+    $('receipt').innerHTML = `<div class="receipt-day">KEVIN’S COOKIE SHOP • CLOSE OF BUSINESS</div><div class="sold">${r.sold} <span style="font-size:22px">/ ${r.baked}</span></div><p>cookies sold · ${r.baked - r.sold} donated</p><div class="receipt-lines"><div><span>Sales revenue</span><b>${money(r.revenue)}</b></div><div><span>Ingredients</span><span>${money(r.baked * 50)}</span></div><div><span>Advertising</span><span>${money(r.ads)}</span></div><div><span>Shop costs</span><span>$5.00</span></div><div><span>Total expenses</span><b>${money(r.expenses)}</b></div><div class="profit ${r.profit >= 0 ? 'positive' : 'negative'}"><span>Daily profit</span><span>${money(r.profit)}</span></div></div><div class="closing-cash"><span>Cash at closing</span><b>${money(r.cash)}</b></div><p>${r.sold === r.baked && r.baked > 0 ? 'Sold out! Try a larger batch tomorrow.' : r.sold < r.baked ? 'A few left on the tray. Try a smaller batch or a friendlier price.' : 'No cookies baked today. Tomorrow is another chance.'}</p><div class="satisfaction-feedback"><b>Customer satisfaction</b><p>${feedback(r)}</p></div>`;
   }
   function render() {
     const finished = over();
     $('day').innerHTML = `Day ${Math.min(state.history.length + 1, 30)} <small>/ 30</small>`;
     $('day-label').textContent = finished ? 'SHOP CLOSED' : state.history.length ? 'READY FOR ANOTHER BATCH' : 'OPENING DAY';
     $('cash').textContent = money(state.cash);
+    $('satisfaction').innerHTML = `${state.satisfaction} <small>/ 100</small>`;
+    const lastFeedback = state.history.at(-1)?.feedback;
+    $('satisfaction-change').textContent = lastFeedback ? `${signed(lastFeedback.change)} points on day ${state.history.at(-1).day}` : 'Starting reputation';
     const profit = state.cash - 10000;
     $('total-profit').textContent = money(profit);
     $('total-profit').className = profit < 0 ? 'negative' : 'positive';
@@ -91,7 +108,7 @@
     $('history-count').textContent = `${state.history.length} ${state.history.length === 1 ? 'day' : 'days'} in the books`;
     if (state.history.length) {
       receipt(state.history.at(-1));
-      $('history').innerHTML = [...state.history].reverse().map(r => `<tr><td>${r.day}</td><td>${r.baked} / ${r.sold}</td><td>${money(r.revenue)}</td><td>${money(r.expenses)}</td><td class="${r.profit >= 0 ? 'positive' : 'negative'}">${money(r.profit)}</td><td>${money(r.cash)}</td></tr>`).join('');
+      $('history').innerHTML = [...state.history].reverse().map(r => `<tr><td>${r.day}</td><td>${r.baked} / ${r.sold}</td><td>${money(r.revenue)}</td><td>${money(r.expenses)}</td><td class="${r.profit >= 0 ? 'positive' : 'negative'}">${money(r.profit)}</td><td>${money(r.cash)}</td><td class="history-feedback">${feedback(r)}</td></tr>`).join('');
     }
     estimate();
   }
@@ -105,8 +122,10 @@
     // Ads have diminishing returns; prices above $2 reduce customer demand.
     const demand = Math.max(0, Math.round((35 + 13 * Math.sqrt(ads / 100)) * Math.pow(200 / price, 1.35) * forecast().demand * (.88 + Math.random() * .24)));
     const sold = Math.min(baked, demand), revenue = sold * price, profit = revenue - expenses;
+    const feedback = CookieSatisfaction.calculate(state.satisfaction, price, demand, sold);
+    state.satisfaction = feedback.score;
     state.cash += profit;
-    state.history.push({ day: state.history.length + 1, baked, sold, revenue, expenses, profit, cash: state.cash, ads, price });
+    state.history.push({ day: state.history.length + 1, baked, sold, revenue, expenses, profit, cash: state.cash, ads, price, demand, feedback });
     save();
     serveCustomers(state.history.at(-1));
   });

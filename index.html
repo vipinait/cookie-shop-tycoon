@@ -4,13 +4,14 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Kevin's Cookie Shop Tycoon</title>
   <link rel="stylesheet" href="style.css">
+  <script src="satisfaction.js" defer></script>
   <script src="game.js" defer></script>
 </head>
 <body>
 <main>
   <header><a class="brand" href="./index.html"><span class="cookie">●</span> KEVIN’S COOKIE SHOP</a><button id="restart" class="subtle">New game</button></header>
   <section class="intro"><div class="eyebrow">SMALL BATCHES. BIG DREAMS.</div><h1>A little dough.<br>A lot of possibility.</h1><p>Thirty days to turn $100 into the neighborhood’s favorite cookie shop.</p><div class="shop-art" aria-hidden="true"><div class="awning">KEVIN’S</div><div class="window">🍪 <span>freshly baked</span> 🍪</div><div class="counter"></div></div></section>
-  <section class="stats" aria-label="Shop overview"><div><span id="day-label">OPENING DAY</span><strong id="day">Day 1 <small>/ 30</small></strong></div><div><span>CASH IN THE TILL</span><strong id="cash">$100.00</strong></div><div><span>TOTAL PROFIT</span><strong id="total-profit">$0.00</strong></div></section>
+  <section class="stats" aria-label="Shop overview"><div><span id="day-label">OPENING DAY</span><strong id="day">Day 1 <small>/ 30</small></strong></div><div><span>CASH IN THE TILL</span><strong id="cash">$100.00</strong></div><div><span>TOTAL PROFIT</span><strong id="total-profit">$0.00</strong></div><div><span>CUSTOMER SATISFACTION</span><strong id="satisfaction">75 <small>/ 100</small></strong><small id="satisfaction-change">Starting reputation</small></div></section>
   <div class="workspace">
   <section class="panel plan"><div class="section-heading"><span class="step">01</span><h2>Make today’s plan</h2></div><p id="forecast" class="forecast"></p>
   <form id="plan-form">
@@ -22,7 +23,7 @@
   </form><p class="note">Unsold cookies are donated at closing. Each day is a fresh start.</p></section>
   <section class="panel results" aria-live="polite"><div class="section-heading"><span class="step">02</span><h2 id="results-title">The daily receipt</h2></div><div id="customer-scene" hidden><div class="scene-header"><b>THE COOKIE COUNTER</b><span id="sales-count">Doors open!</span></div><div class="customer-street" aria-hidden="true"><div class="mini-shop"><div>KEVIN’S</div><span>🍪 🍪 🍪</span></div><div id="customer-lane"></div></div><p id="scene-caption"></p></div><div id="receipt"><div class="empty-cookie" aria-hidden="true">🍪</div><h3>Your first batch awaits.</h3><p>Choose your bake, set your price, and open the doors. Your day’s results will appear here.</p><div class="tip"><b>A little advice from Kevin</b><p>Start small. Watch demand. A higher price means more per cookie, but fewer customers.</p></div></div></section>
   </div>
-  <section class="panel history"><div class="section-heading"><h2>Your shop’s story</h2><span id="history-count">0 days in the books</span></div><div class="table-scroll"><table><thead><tr><th>Day</th><th>Baked / sold</th><th>Revenue</th><th>Expenses</th><th>Profit</th><th>Cash</th></tr></thead><tbody id="history"><tr><td colspan="6" class="empty-history">Every great cookie shop starts with day one.</td></tr></tbody></table></div></section>
+  <section class="panel history"><div class="section-heading"><h2>Your shop’s story</h2><span id="history-count">0 days in the books</span></div><div class="table-scroll"><table><thead><tr><th>Day</th><th>Baked / sold</th><th>Revenue</th><th>Expenses</th><th>Profit</th><th>Cash</th><th>Satisfaction &amp; feedback</th></tr></thead><tbody id="history"><tr><td colspan="7" class="empty-history">Every great cookie shop starts with day one.</td></tr></tbody></table></div></section>
   <footer>BAKED WITH AMBITION <span>Progress saves automatically in this browser.</span></footer>
 </main>
 <dialog id="reset-dialog"><h2>Start a fresh shop?</h2><p>This will replace your current 30-day run.</p><div class="dialog-actions"><button id="cancel-reset" class="subtle">Keep playing</button><button id="confirm-reset" class="primary">Start over</button></div></dialog>

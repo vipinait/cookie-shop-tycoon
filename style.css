@@ -20,3 +20,5 @@
 @keyframes purchase-pop{0%,39%{opacity:0;transform:translateY(5px)}45%,62%{opacity:1;transform:translateY(0)}75%,100%{opacity:0;transform:translateY(-12px)}}
 @keyframes happy-bob{to{transform:translateY(-3px) rotate(4deg)}}
 @media(prefers-reduced-motion:reduce){.customer,.customer-face,.cookie-bag,.purchase{animation:none}.customer{opacity:1;left:calc(50% - 27px)}.customer~.customer{display:none}.cookie-bag{opacity:1}}
+
+.stats{grid-template-columns:repeat(4,minmax(0,1fr))}.stats>div{padding:0 20px}#satisfaction-change{display:block;font-size:11px;margin-top:8px;line-height:1.4}.satisfaction-feedback{text-align:left;background:#f0f3eb;border-radius:6px;padding:16px;margin-top:18px}.satisfaction-feedback p{margin:8px 0 0;font-size:12px}.history-feedback{white-space:normal;min-width:240px;max-width:340px;text-align:left;line-height:1.6}@media(max-width:750px){.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 0}.stats>div:nth-child(2){border-right:0}.stats>div{padding:0 14px}}
